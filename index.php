@@ -87,15 +87,6 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
                     //echo "<div class='collapse'>";
                     $routeid = $row['route_id'];
                     echo "<option value='$routeid'>Route $routeid</option>";
-                    /*echo "<input type='checkbox' value='$routeid' onchange='add(this)'/>";
-                    echo "<div class='collapse-title -mt-4'>";
-                    echo "<div class='float-left circle mr-2' style='background-color:#".$row['route_color'].";'></div>";
-                    echo "<div name='route' onclick='add(this.value)' value='$routeid' class='bg-slate-200 ml-1 mt-1 w-1/2 rounded-lg font-bold cursor-pointer text-[#373a40]'>Route " . $row['route_id'] . "</div>";
-                    echo "</div>";
-                    echo "<div class='collapse-content'>";
-                    echo "<p id='$routeid'>No buses</p>";
-                    echo "</div>";
-                    echo "</div>";*/
                   }
                 } else {
                   echo "No routes found";
@@ -132,7 +123,6 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
       return div;
   };
   legend.addTo(map);
-  //var delays = L.layerGroup();
   var busIcon = L.divIcon({
     html: '<ion-icon size="large" name="bus"></ion-icon>',
     className: 'my-div-icon',
@@ -145,25 +135,6 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
   });
   
   <?php
-    //$sql = "SELECT `stop_id`, `stop_name`, `stop_desc`, `stop_lat`, `stop_lon` FROM `stops`";
-    /*$sql = "SELECT * FROM `top_stops`";
-    //$sql = "SELECT `stops`.`stop_lat`, `stops`.`stop_lon`, `stops`.`stop_id`, `stop_times`.`trip_id` FROM `stops` , `stop_times` WHERE `stops`.`stop_id` = `stop_times`.`stop_id` AND `stop_times`.`trip_id` = '1001004'";
-    $result = $conn->query($sql);
-		if ($result->num_rows > 0) {
-			// Output data of each row
-      $currentStop = "1";
-			while ($row = $result->fetch_assoc()) {
-        if ($currentStop != $row['stop_id']) {
-          echo $stopOutput;
-          $routes = " ";
-          $currentStop = $row['stop_id'];
-        }
-        $routes = $routes . " " . $row['route_id'];
-        $stopOutput = "var marker = L.marker([" . $row['stop_lat'] . "," . $row['stop_lon'] . "], {icon: stopIcon}).bindPopup(\"#".$row['stop_id'].": " . $row['stop_name'] . "</br>".$routes ."\").addTo(map);";
-		  }
-		} else {
-			echo "No stops found";
-		}*/
 		$conn->close();
 	?>
   //delays.addTo(map);
@@ -282,7 +253,7 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
                             
             error: function (responseText)
             {
-              alert(responseText);
+              //alert(responseText);
             }
         });
       //x = setInterval(changeTime(routeid), 15000);
@@ -388,32 +359,9 @@ L.maplibreGL({
                           
           error: function (responseText)
           {
-            alert(responseText);
+            //alert(responseText);
           }
       });
-  }
-
-  //called when user selects to view old data
-function showData(date) {
-  markerGroup.clearLayers();
-  clearInterval(x);
-    var time = "00:00:00";
-    $.ajax(
-      {
-        url: "realtime_data/readFile.php",
-        type: 'POST',
-        dataType: 'text',
-        data: {date: date},
-        success: function (responseText)
-        {
-          eval(responseText);
-        },
-                        
-        error: function (responseText)
-        {
-          alert(responseText);
-        }
-    });
   }
 
   function change() {
