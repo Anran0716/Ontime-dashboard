@@ -79,7 +79,6 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
               <option value="clear">Clear all</option>
               <?php
                 $sql = "SELECT `route_id`, `route_long_name`, `route_color` FROM `routes` ORDER BY `routes`.`route_id` ASC";
-                //$sql = "SELECT `stops`.`stop_lat`, `stops`.`stop_lon`, `stops`.`stop_id`, `stop_times`.`trip_id` FROM `stops` , `stop_times` WHERE `stops`.`stop_id` = `stop_times`.`stop_id` AND `stop_times`.`trip_id` = '1001004'";
                 $result = $conn->query($sql);
                 if ($result->num_rows > 0) {
                   // Output data of each row

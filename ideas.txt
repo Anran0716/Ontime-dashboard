@@ -1,0 +1,5 @@
+Checklist of things to do plus ideas:
+    fix the appearance of website when window is made smaller
+    restructure page
+    show data by route
+    
