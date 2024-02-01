@@ -2,4 +2,9 @@ Checklist of things to do plus ideas:
     fix the appearance of website when window is made smaller
     restructure page
     show data by route
+    fix when data is slow to show up -> "data is loading" or a progress bar? circle?
     
+DOCUMENTATION:
+    added new user for database
+        USER: remote
+        PASSWORD: Djibouti$1990

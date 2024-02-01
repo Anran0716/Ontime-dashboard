@@ -37,68 +37,97 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<!-- Adding geocoding capabilities !-->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
 <script
 src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
 </script>
   <title>On-Time Dashboard</title>
-
 </head>
 
 <body>
-  <div class="h-100% overflow-hidden bg-slate-100/40">
+  <div class="h-screen max-h-screen relative w-screen overflow-hidden pb-8 bg-slate-100/40">
+  <h1 class="mt-2 ml-4 mb-2 text-3xl text-slate-900 font-bold">Gainesville RTS On-time</h1>
       <div id="data-content" style="display:none;">
         <?php include 'data.php';?>
       </div>
       <div id="route-content">
         <div class="flex flex-row">
-          <div>
-            <h1 class="mt-2 ml-4 mb-2 text-3xl text-slate-900 font-bold">Gainesville RTS On-time</h1>
-            <h1 onclick="switchTabs('routes')" class="text-slate-900/70 cursor-pointer float-left ml-4 rounded-t-lg text-lg font-bold bg-slate-300/70 pl-2 pr-4 mr-2">Real-Time Info</h1>
-            <h1 onclick="switchTabs('data')" class="text-slate-900/70 cursor-pointer rounded-t-lg text-lg font-bold bg-slate-300/30 ml-40 hover:bg-slate-300/50">Historical Data</h1>
+          <div class="flex flex-row">
+            <h1 onclick="switchTabs('routes')" class="text-slate-900/70 cursor-pointer float-left ml-4 rounded-t-lg text-lg font-bold bg-slate-300/70 pl-2 pr-4">Real-Time Info</h1>
+            <h1 onclick="switchTabs('data')" class="text-slate-900/70 cursor-pointer rounded-t-lg text-lg pr-2 font-bold bg-slate-300/30 pl-2  hover:bg-slate-300/50">Historical Data</h1>
+            <h1 class="rounded-t-lg font-bold text-slate-900/70 bg-slate-300/70 min-w-72 ml-3 text-lg pl-2 pr-2">Realtime Operational Stats</h1>
           </div>
-          <div class="relative flex flex-row mt-14">
-              <div class="rounded-t-lg font-bold -mt-1 absolute sticky bottom-0 text-slate-900/70 bg-slate-300/70 min-w-72 ml-3 text-lg pl-2 pr-2">Realtime Operational Stats</div>
+          <div class="relative flex flex-row">
               <div id="busData" class="text-slate-900/70 rounded-lg font-bold pl-2 pr-2 mr-8"></div>
               <div id="time" class="font-bold text-slate-900/70 ml-8">Time</div>
             <!--<input class="float-right mr-12" onchange="showData(this.value)" type="date" id="dataDate" name="dataDate" value="2022-10-18" min="2022-10-18" max="2022-10-31">-->
           </div>
         </div>
         <div class="bg-slate-300/70 ml-4 mr-4 flex rounded-tr-lg pb-8 rounded-b-lg flex-row pb-4">
-          <div class="p-4 w-96 text-base-content place-content-center">
-            <div class="bg-white rounded-lg font-semibold p-3 mb-2">
-              <i class="fa fa-question-circle float-left mr-2" style="font-size:36px;color:#F87272"></i>
-              <div class="ml-2">Use the selection below to display routes and view buses currently running.
-                <!--</br><ion-icon class="my-div-icon ml-2 mt-2 float-left mr-2" size="large" name="bus"></ion-icon> </br>This bus is delayed</br>
-                <ion-icon class="my-div-icon mt-4 ml-2 float-left mr-2" style="color:#3bbf40;" size="large" name="bus"></ion-icon> </br>This bus is not delayed</br>!-->
+          <!-- form to add info -->
+          <div class="p-4 w-96 text-base-content place-content-center pb-2">
+            <div id="form-content" style="display:none;" class="bg-white rounded-lg font-semibold p-3 text-base-content place-content-center">
+              <?php include 'form.php';?>
+            </div>
+            <div id="side-content">
+              <div class="bg-white rounded-lg font-semibold p-3 mb-2">
+                <i class="fa fa-question-circle float-left mr-2" style="font-size:36px;color:#F87272"></i>
+                <div class="ml-2">Use the selection below to display routes and view buses currently running.
+                  <!--</br><ion-icon class="my-div-icon ml-2 mt-2 float-left mr-2" size="large" name="bus"></ion-icon> </br>This bus is delayed</br>
+                  <ion-icon class="my-div-icon mt-4 ml-2 float-left mr-2" style="color:#3bbf40;" size="large" name="bus"></ion-icon> </br>This bus is not delayed</br>!-->
+                </div>
+              </div>
+              <div id="currData" class="bg-white rounded-lg p-3 mb-2 font-semibold">Current data for buses running right now</div>
+              <select id="route" onchange="displayRoute(this.value)" class="bg-indigo-950 text-white select text-base w-full">
+                <option disabled selected>Add Route</option>
+                <option value="display">Display routes currently running</option>
+                <option value="clear">Clear all</option>
+                <?php
+                  $sql = "SELECT `route_id`, `route_long_name`, `route_color` FROM `routes` ORDER BY `routes`.`route_id` ASC";
+                  $result = $conn->query($sql);
+                  if ($result->num_rows > 0) {
+                    // Output data of each row
+                    while ($row = $result->fetch_assoc()) {
+                      //echo "<div class='collapse'>";
+                      $routeid = $row['route_id'];
+                      echo "<option value='$routeid'>Route $routeid</option>";
+                    }
+                  } else {
+                    echo "No routes found";
+                  }
+                ?>
+              </select>
+              <div class="bg-white/40 h-96 rounded-lg mb-2 overflow-auto mt-2">
+                <div id="currRoutes" class="mt-2 grid grid-cols-2 gap-2 overflow-auto sm:grid-cols-2 p-2">
+                  <div id="loading" class="ml-36 mt-36 hidden">
+                    <div role="status">
+                        <svg aria-hidden="true" class="inline w-12 h-12 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                        </svg>
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg font-semibold p-3">
+                <i class="fa fa-exclamation-circle float-left mr-2" style="font-size:36px;color:#F87272"></i>
+                <div class="ml-2">Click on the button below to report any issues, comments, or concerns
+                </div>
+                <button class="btn btn-sm mt-2 font-semibold w-full text-base" onclick="openForm()">report</button>
               </div>
             </div>
-            <div id="currData" class="bg-white rounded-lg p-3 mb-2 font-semibold">Current data for buses running right now</div>
-            <select id="route" onchange="displayRoute(this.value)" class="bg-indigo-950 text-white select text-base w-full">
-              <option disabled selected>Add Route</option>
-              <option value="display">Display routes currently running</option>
-              <option value="clear">Clear all</option>
-              <?php
-                $sql = "SELECT `route_id`, `route_long_name`, `route_color` FROM `routes` ORDER BY `routes`.`route_id` ASC";
-                $result = $conn->query($sql);
-                if ($result->num_rows > 0) {
-                  // Output data of each row
-                  while ($row = $result->fetch_assoc()) {
-                    //echo "<div class='collapse'>";
-                    $routeid = $row['route_id'];
-                    echo "<option value='$routeid'>Route $routeid</option>";
-                  }
-                } else {
-                  echo "No routes found";
-                }
-              ?>
-            </select>
-            <div id="currRoutes" class="mt-2 grid grid-cols-2 gap-2 bg-white/40 rounded-lg h-96 overflow-auto sm:grid-cols-2 p-1"></div>
           </div>
           <div class="flex-1 mr-8">
             <div id="map" class="w-full ml-4 m-auto rounded-lg mt-4"></div>
           </div> 
         </div>
     </div>
+
   </div>
 </body>
 </html>
@@ -114,6 +143,21 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
     maxZoom: 16,
     minZoom: 12
   });
+  var reportLocation;
+  map.on('click', function(e) {       
+        if (document.getElementById("form-content").style.display == "block") {
+          //allow user to add marker
+          if (!reportLocation) {
+            reportLocation = L.marker(e.latlng, { draggable: true }).addTo(map);
+            map.setView(e.latlng);
+          }
+          /*var popLocation= e.latlng;
+          var popup = L.popup()
+          .setLatLng(popLocation)
+          .setContent('<p>Hello world!<br />This is a nice popup.</p>')
+          .openOn(map);  */
+        }      
+    });
   var legend = L.control({position: 'topright'});
   legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'legend');
@@ -121,6 +165,7 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
       div.innerHTML += '<div class="text-sm font-semibold"><ion-icon class="my-div-icon ml-2 mt-2 float-left mr-2" size="large" name="bus"></ion-icon><div class="mt-2 ml-1">This bus is delayed</div><ion-icon class="my-div-icon mt-4 ml-2 mb-2 float-left mr-2" style="color:#3bbf40;" size="large" name="bus"></ion-icon> </br>not delayed</div></div>';
       return div;
   };
+
   legend.addTo(map);
   var busIcon = L.divIcon({
     html: '<ion-icon size="large" name="bus"></ion-icon>',
@@ -159,6 +204,39 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
       }, 100);
     }
   }
+  var geocoder;
+  var geoMarker;
+  function openForm() {
+	  document.getElementById("form-content").style.display = "block";
+	  document.getElementById("side-content").style.display = "none";
+    geocoder = L.Control.geocoder({
+      bbox: L.latLngBounds(L.latLng(29.5808, -82.4735), L.latLng(29.7268, -82.2144)),
+      collapsed: false,
+      position: 'topleft'
+    }).addTo(map);
+    geocoder.on('markgeocode', function (event) {
+      var location = event.geocode.center; // Extract the resulting location
+      geoMarker = L.marker(location).addTo(map);
+      document.getElementById('location').setAttribute('value', event.geocode.name);
+    });
+	}
+	function closeForm() {
+	  	document.getElementById("form-content").style.display = "none";
+	  	document.getElementById("side-content").style.display = "block";
+      map.removeControl(geocoder);
+      if (geoMarker)
+        geoMarker.removeFrom(map);
+      if (reportLocation) {
+      reportLocation.removeFrom(map);
+      reportLocation = null;
+      }
+	  	return false;
+	}
+	function validation() {
+		document.myForm.action = "add.php";
+		document.myForm.submit();
+	}
+
   const tripsShown = new Set();
 	
   class Bus {
@@ -174,8 +252,32 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
       this.nearStop = stop;
     }
   }
+  var stopLayer = L.geoJSON().addTo(map);
+  function showStops() {
+    map.removeLayer(stopLayer);
+    $.getJSON("data/bus_stops.geojson", function(data){
+      stopLayer = L.geoJSON(data, {
+        pointToLayer: function(feature, latlng) {
+      // Define the style for the circle marker
+      var markerStyle = {
+        radius: 3,           // Size of the circle
+        fillColor: "#a9a9a9", // Grey color
+        color: "#fff",        // Border color
+        weight: 1,            // Border width
+        opacity: 1,           // Border opacity
+        fillOpacity: 0.8      // Fill opacity
+      };
 
-  
+      // Create a circle marker with the defined style
+      return L.circleMarker(latlng, markerStyle);
+    },
+        onEachFeature: function(feature, featureLayer) {
+          featureLayer.bindPopup("Stop " + feature.properties.stop_id + ": " + feature.properties.stop_name);
+        }
+      }).addTo(map);
+    });
+  }
+  showStops();
   var pathLayer = L.geoJSON().addTo(map);
   function showPaths() {
     map.removeLayer(pathLayer);
@@ -203,6 +305,8 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
   }
     function displayRoute(value) {
       if (value === "display") {
+        if (document.getElementById("busData").innerHTML == "") 
+          document.getElementById("loading").style.display = "block";
         display();
       }
       else if (value === "clear") {
@@ -214,6 +318,11 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
       showPaths();
     }
     
+    function displayOneRoute(value) {
+      clear();
+      addBus(value);
+    }
+    
 
   function remove(value) {
     buses.forEach((bus) => {
@@ -223,6 +332,7 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
     });
     document.getElementById(value).remove();
     tripsShown.delete(value);
+    $('#route').get(0).selectedIndex = 0;
     showPaths();
   }
 
@@ -276,6 +386,9 @@ L.maplibreGL({
     style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json',  // Style URL; see our documentation for more options
     attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
 }).addTo(map2);
+
+
+//L.Control.geocoder().addTo(map);
 
   
 
@@ -354,6 +467,10 @@ L.maplibreGL({
             var perRtDly = delayedRoutes / routes.size * 100;
             document.getElementById("busData").innerHTML = "No. Routes: " + routes.size + "&nbsp;&nbsp;&nbsp; No. Vehicles: " + busNo + "&nbsp;&nbsp;&nbsp; No. Vehicles Delayed: " + perDly.toFixed(2) + "%" + "&nbsp;&nbsp;&nbsp; No. Routes Delayed: " + perRtDly.toFixed(2) + "%";
             document.getElementById("currData").innerHTML = "There are " + routes.size + " routes running currently.</br>" + busDatas;
+            if (document.getElementById("loading").style.display == "block") {
+              document.getElementById("loading").style.display = "none";
+              displayRoute("display");
+            }
           },
                           
           error: function (responseText)

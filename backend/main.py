@@ -13,7 +13,7 @@ nexttime = time.time()  # initializing
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="mysql",
+  password="Garfield$1969",
   database="ontime"
 )
 
@@ -35,7 +35,7 @@ url3="https://riderts.app/bustime/api/v3/getvehicles?key=QxNvqGVVVdD4k3LgZjUgEED
 url4="https://riderts.app/bustime/api/v3/getvehicles?key=QxNvqGVVVdD4k3LgZjUgEEDz3&rt=125,126,127,150,600&tmres=s&format=json"
 
 
-for i in range(10000): #may set to 100000
+for i in range(100000): #may set to 100000
     sesh = requests.Session()
     req1 = sesh.get(url1)
     list1=[]
